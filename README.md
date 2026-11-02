@@ -1,19 +1,19 @@
 # Feixin Gesture
 
-A gesture-controlled music project built with **Max/MSP, MediaPipe, and Rhythm and Time Toolkit (RTT)**. It uses a camera to track both hands and translates gestures and hand movements into MIDI notes, rhythmic changes, and continuous control messages for live musical interaction and improvisation.
+A gesture-controlled music project built with **Max/MSP and MediaPipe**, using the **Rhythm and Time Toolkit (RTT) package** for Euclidean rhythm generation. It tracks both hands through a camera and translates gestures and hand movements into MIDI notes, rhythmic changes, and continuous control messages for live musical interaction and improvisation.
 
-The Max patches combine hand tracking with generative sequencing across keys, drums, and bass. A separate DAW project receives the MIDI output and produces the music.
+Max generates MIDI sequences for keys, drums, and bass. A separate DAW project receives this MIDI output and produces the music.
 
-> **A DAW project with instruments is required to produce sound.** The original setup uses a **four-track Ableton Live Session** as its sound-generating project. The supplied Max project does not include this Live Session, instruments, or samples; you will need to provide the DAW project separately or build your own receiving setup.
+> **A separate DAW project with instruments is required to produce sound.** The original setup uses a **six-track Ableton Live Session**, with **two tracks for each instrument part—keys, drums, and bass—to switch between timbres**. The supplied Max project does not include this Live Session, instruments, or samples.
 
 ## Features
 
-- **Two-hand tracking:** Detects up to two hands, with 21 landmarks per hand and gesture classification.
-- **Custom OK gesture:** Uses distances between hand landmarks to detect an OK gesture inside Max.
+- **Two-hand tracking:** Up to two hands, with 21 landmarks per hand and gesture classification.
+- **Custom OK detection:** Geometric calculations using hand landmarks inside Max.
 - **Three MIDI sequence parts:** Independently toggle keys, drums, and bass.
-- **Rhythm generation:** Combines randomized patterns with RTT's `rtt.euclidean~` to generate 32-step drum sequences.
+- **Rhythm generation:** Randomized patterns and RTT's `rtt.euclidean~` generate 32-step drum sequences.
 - **Continuous control:** Open-palm movement modulates MIDI CC output.
-- **Visual feedback:** Displays the camera image, hand skeletons, and control states. The recognition patch also supports JPG and PNG images.
+- **Visual feedback:** Camera image, hand skeletons, and control states. The recognition patch also accepts JPG and PNG images.
 
 ## Signal Flow
 
@@ -28,8 +28,10 @@ Max gesture mapping and sequence generation
       ↓
 MIDI notes / CC
       ↓
-DAW project with instruments → Audio output
-(original setup: four-track Ableton Live Session)
+Six-track Ableton Live Session
+(two tracks per instrument part for timbre switching)
+      ↓
+Audio output
 ```
 
 ## Requirements
@@ -37,46 +39,46 @@ DAW project with instruments → Audio output
 | Component | Details |
 | --- | --- |
 | Max | Both patches were saved in **Max 9.0.5**. Use this version or later; other versions have not been verified. |
-| Rhythm and Time Toolkit | Required for the `rtt.euclidean~` object used in the sequencing patch. |
-| Camera | Live control requires an available video input and camera permission. |
-| Internet connection | The web page loads MediaPipe scripts and WASM from jsDelivr, and the recognition model from Google Storage. |
-| DAW project with instruments | Required to receive Max's MIDI notes and generate audio. The original project uses a four-track Ableton Live Session. |
-| MIDI connection | An available MIDI route from Max to the DAW. The patches currently target `from Max 1`. |
+| Rhythm and Time Toolkit | Install separately through Max's Package Manager. Required for `rtt.euclidean~`. |
+| Camera | Live control requires a video input and camera permission. |
+| Internet connection | MediaPipe scripts and WASM load from jsDelivr; the recognition model loads from Google Storage. |
+| DAW project with instruments | Receives Max's MIDI notes and generates audio. The original setup uses a six-track Ableton Live Session. |
+| MIDI connection | A route from Max to the DAW. The patches currently target `from Max 1`. |
 
-Install **Rhythm and Time Toolkit** through Max's **File → Show Package Manager**. See the [upstream installation instructions](https://github.com/pdmeyer/rhythm-and-time-toolkit#installation) for details.
+Install **Rhythm and Time Toolkit** through Max's **File → Show Package Manager**. See the [upstream installation instructions](https://github.com/pdmeyer/rhythm-and-time-toolkit#installation).
 
-The JavaScript uses `@mediapipe/tasks-vision@0.10.0` with the recognizer configured for GPU processing. Offline copies of the model and all web dependencies are not bundled.
+The JavaScript uses `@mediapipe/tasks-vision@0.10.0` with GPU processing. Offline copies of the model and all web dependencies are not bundled.
 
 ## Getting Started
 
 1. Download and extract the project, preserving the relative locations of the Max patches, HTML file, `js/`, and `css/` folders.
-2. Install RTT, then open both patches in the same Max application instance: `jweb-hands-gesture-recognizer.maxpat` for camera input and recognition, and `gesture system.maxpat` for gesture mapping, sequencing, and MIDI output.
-3. Allow camera access and wait for the web dependencies and model to load. To change cameras, refresh the device list in the recognition patch and select an input.
-4. Enable DSP in Max's audio settings. The palm-modulation modules use signal objects such as `cycle~` and `snapshot~`, which require DSP to run.
-5. Open the separate DAW project containing your instruments. The original performance setup uses a four-track Ableton Live Session; this session must be supplied separately if you want to reproduce that setup.
-6. Route Max's MIDI output to the DAW. The patches target **`from Max 1`** by default. If that port is unavailable, update each `midiout` object to use an available output port.
-7. Configure the receiving instruments for the MIDI channels below, and enable input monitoring so incoming notes can be heard.
+2. Install RTT, then open both patches in the same Max application instance: `jweb-hands-gesture-recognizer.maxpat` for recognition, and `gesture system.maxpat` for sequencing and MIDI output.
+3. Allow camera access and wait for the dependencies and model to load. Refresh the recognition patch's device list and select an input if needed.
+4. Enable DSP in Max's audio settings. The palm-modulation modules use signal objects such as `cycle~` and `snapshot~`.
+5. Open the separate DAW project. To reproduce the original setup, use the six-track Ableton Live Session with two alternative timbres for each instrument part.
+6. Route Max's MIDI output to the DAW. The default target is **`from Max 1`**. If unavailable, update each `midiout` object to use an available output port.
+7. Configure the receiving MIDI channels, load instruments, and enable input monitoring.
 8. Open Presentation Mode in `gesture system.maxpat`, set the BPM, and test the keys / drum / bass switches before trying gesture control.
 
-## DAW and MIDI Setup
+## Ableton Live Session and MIDI Routing
 
-Max generates the musical control data; the receiving DAW project supplies the instruments, effects, mixing, and audio output.
+The original Live Session uses **six tracks in three pairs**. Each instrument part has two tracks with alternative timbres, allowing its sound to be switched during performance.
 
-| MIDI channel | Output |
-| --- | --- |
-| 1 | Keys notes, plus CC 1 and CC 10 control messages |
-| 2 | Drum notes |
-| 3 | Bass notes |
+| Instrument part | Live tracks | MIDI note channel | Purpose |
+| --- | --- | --- | --- |
+| Keys | 2 | 1 | Switch between two keys timbres |
+| Drums | 2 | 2 | Switch between two drum timbres |
+| Bass | 2 | 3 | Switch between two bass timbres |
 
-The original Ableton Live Session contains **four tracks**, while the supplied Max patches expose the **three MIDI note channels** listed above. The fourth track's role, instrument assignments, effects, and complete track routing are not specified in the supplied files. Use the original Live Session's routing if available, or configure a receiving project around these MIDI outputs.
+Max also sends **CC 1 and CC 10 on channel 1**. Map these messages to the desired parameters in the receiving project.
 
-For a replacement DAW project, load instruments for the keys, drum, and bass parts, route the relevant MIDI channels to them, and map CC messages to the parameters you want to control. The resulting sound depends on your instruments and mappings.
+The six Live tracks correspond to three instrument parts, not six separate MIDI note channels. The instruments, effects, and detailed timbre-switching configuration belong to the separate Live Session. Use its routing if available, or create your own paired tracks and sound-switching setup in a DAW.
 
-**Drums are sent on channel 2.** Set the drum instrument to receive that channel and adapt its note mapping to the patch as needed.
+**Drums are sent on channel 2.** Set the drum instruments to receive that channel and adapt their note mappings as needed.
 
 ## Gesture Controls
 
-The following mappings reflect the connections in the current Max patches.
+These mappings reflect the connections in the supplied Max patches.
 
 | Gesture | Label | Action |
 | --- | --- | --- |
@@ -90,71 +92,79 @@ The following mappings reflect the connections in the current Max patches.
 
 ### Performance Notes
 
-- Discrete gesture triggers are gated by the detected hand count. The current design requires both hands to be detected, so keep both hands in view.
-- Holding a gesture does not continuously retrigger its action. To repeat an action, make a fist first, then perform the target gesture again.
-- Keys, drums, and bass use toggled playback states and can continue playing after a gesture. Use their switches to stop playback rather than relying on removing your hands from view.
-- Palm movement modulates time-varying CC output. Its audible effect depends on the receiving DAW's parameter mappings.
-- Adjust tempo using the BPM field and the `speed up` / `speed down` interface controls. Thumb gestures change rhythm event counts.
-- `OK` is detected through geometric calculations in Max rather than a default MediaPipe gesture category. Camera distance, hand angle, and detection thresholds can affect recognition.
+- Discrete gesture triggers are gated by hand count. Keep both hands visible for these controls.
+- Holding a gesture does not continuously retrigger its action. To repeat it, make a fist first, then perform the target gesture again.
+- Keys, drums, and bass use toggled playback states and can continue after a gesture. Use their switches to stop playback; removing your hands does not reliably stop it.
+- Palm movement modulates time-varying CC output. The audible result depends on the DAW's mappings.
+- Adjust tempo with the BPM field and `speed up` / `speed down` controls. Thumb gestures change rhythm event counts.
+- `OK` uses geometric calculations in Max rather than a default MediaPipe category. Camera distance, hand angle, and thresholds affect recognition.
 
 ## Project Structure
 
 ```text
 feixin_gesture/
 ├── README.md
+├── LICENSE                              # GNU GPL v3.0 license text
 ├── gesture system.maxpat                 # Sequencing, gesture mapping, MIDI output
-├── jweb-hands-gesture-recognizer.maxpat   # Hand tracking, landmark parsing, OK detection
-├── jweb-hands-gesture-recognizer.html     # Web entry point loaded by jweb
+├── jweb-hands-gesture-recognizer.maxpat   # Tracking, landmark parsing, OK detection
+├── jweb-hands-gesture-recognizer.html     # Web entry point for jweb
 ├── css/
 │   └── mesh-style.css                    # Image and overlay styling
 └── js/
     ├── hands-landmarks-index.js          # Hand landmark indices
-    └── jweb-hands-gesture-recognizer.js   # MediaPipe setup, recognition, Max communication
+    └── jweb-hands-gesture-recognizer.js   # MediaPipe and Max communication
 ```
 
-The DAW project is separate and is not included in this file structure.
+The DAW project and RTT package are separate and are not included above.
 
-The patches communicate through named Max message channels, including `left_gest`, `right_gest`, `left_xy`, `right_xy`, and `numhands`. Both patches must run in the same Max instance. Opening multiple copies may cause messages to interfere with one another.
+The patches communicate through named Max message channels, including `left_gest`, `right_gest`, `left_xy`, `right_xy`, and `numhands`. Run both patches in the same Max instance. Multiple copies may interfere with one another.
 
 ## Troubleshooting
 
-### The web view is blank or the camera image is missing
+### Blank web view or missing camera image
 
-Check camera permissions, the selected input device, and connectivity to `cdn.jsdelivr.net` and `storage.googleapis.com`. Use `reload` in the recognition patch and inspect the Max Console for `jweb` errors. If the local HTML file cannot be found, check its location and, if necessary, provide its absolute file URL to `jweb`.
+Check camera permissions, the input device, and connectivity to `cdn.jsdelivr.net` and `storage.googleapis.com`. Use `reload` and inspect the Max Console for `jweb` errors. If the HTML file cannot be found, check its location and, if necessary, give `jweb` its absolute file URL.
 
-### Max cannot find `rtt.euclidean~`
+### Missing `rtt.euclidean~`
 
-Confirm that RTT is installed and available to Max, then reopen the sequencing patch.
+Confirm RTT is installed and available to Max, then reopen the sequencing patch.
 
-### Gestures are recognized, but there is no sound
+### Gestures work, but there is no sound
 
-Open the separate DAW project and confirm that instruments are loaded. Check the MIDI output port, receiving channels, input monitoring, and DAW audio output. Use the interface switches to verify that the sequences are running. The drum instrument must receive channel 2.
+Open the separate DAW project and load instruments. Check the MIDI output port, receiving channels, input monitoring, and audio output. Test the interface switches first. Drum instruments must receive channel 2.
 
-### Gestures do not trigger, or an action cannot be repeated
+### Gestures do not trigger or cannot be repeated
 
-Keep both hands visible, make a fist, then perform the target gesture. Check the left/right labels in the recognition patch and adjust `flip_hands` / `flip_image` as needed.
+Keep both hands visible, make a fist, then perform the target gesture. Check the left/right labels and adjust `flip_hands` / `flip_image` as needed.
 
-### Moving an open palm does not change the sound
+### Palm movement does not change the sound
 
-Confirm that the gesture is recognized as `Open_Palm`, Max DSP is enabled, and the DAW has parameters mapped to CC 1 / CC 10 on channel 1.
+Confirm the gesture is `Open_Palm`, Max DSP is enabled, and the DAW has parameters mapped to CC 1 / CC 10 on channel 1.
 
-## Sources and Acknowledgments
+## Code Attribution
 
-Parts of this project's code and implementation are derived from the following repositories and have been integrated and extended for gesture-controlled music:
+The hand-tracking and gesture-recognition component is based on and modified from **[jweb-hands-gesture-recognizer](https://github.com/lysdexic-audio/jweb-hands-gesture-recognizer)** by **lysdexic-audio**, which provides MediaPipe hand tracking and gesture recognition through Max's `jweb`.
 
-| Source project | Author / maintainer | Use in this project |
-| --- | --- | --- |
-| [rhythm-and-time-toolkit](https://github.com/pdmeyer/rhythm-and-time-toolkit) | Philip Meyer / `pdmeyer` | Rhythm and sequencing functionality, including the `rtt.euclidean~` Euclidean rhythm object. |
-| [jweb-hands-gesture-recognizer](https://github.com/lysdexic-audio/jweb-hands-gesture-recognizer) | `lysdexic-audio` | The foundation for hand tracking, gesture recognition, and communication between MediaPipe and Max's `jweb`. |
+This project adapts that component for musical interaction, including custom OK detection, hand-position output, and integration with gesture-controlled keys, drum, and bass sequences and MIDI CC modulation.
 
-The integrated project includes custom OK detection, two-hand control mappings, linked keys / drum / bass sequencing, and palm-position modulation of MIDI CC. Many thanks to the original authors for their work.
+The upstream project is licensed under **GNU GPL v3.0**. See its [original license](https://github.com/lysdexic-audio/jweb-hands-gesture-recognizer/blob/main/LICENSE).
 
-### License Notes
+## External Dependency and Acknowledgments
 
-Both upstream repositories identify their licenses as **GPL-3.0**. See the [RTT license](https://github.com/pdmeyer/rhythm-and-time-toolkit/blob/main/LICENSE.md) and the [gesture recognizer license](https://github.com/lysdexic-audio/jweb-hands-gesture-recognizer/blob/main/LICENSE). Source code remains subject to the applicable copyright and license notices.
+**[Rhythm and Time Toolkit](https://github.com/pdmeyer/rhythm-and-time-toolkit)** by **Philip Meyer** is used as a separately installed Max package, specifically for the `rtt.euclidean~` object.
 
-The supplied project archive does not include a separate `LICENSE` file. This README records the sources and upstream license information; it does not replace the full license texts.
+No source code or example patches from the RTT repository have been copied or adapted into this project. RTT is an external dependency and is not bundled with this repository. Please install it through Max's Package Manager.
+
+Thanks to lysdexic-audio for the gesture-recognition foundation and Philip Meyer for the RTT package.
+
+## License
+
+This project's code is distributed under the **GNU General Public License v3.0**. See [LICENSE](LICENSE) for the full license text.
+
+The hand-tracking and gesture-recognition component includes code derived from `lysdexic-audio/jweb-hands-gesture-recognizer`. Copyright in the upstream code remains with its respective authors; this project's modifications do not replace their rights or notices.
+
+Separately installed dependencies remain subject to their own licenses. The Ableton Live Session, instruments, and samples are not included in this repository.
 
 ## Verification Status
 
-This documentation is based on the supplied Max patches, JavaScript implementation, upstream repository documentation, and the project author's description of the original four-track Ableton Live setup. End-to-end camera and DAW testing, and cross-platform compatibility testing, have not been performed as part of this documentation update. The Max version listed above is the file's saved version, not a compatibility test result.
+This documentation is based on the supplied patches, JavaScript, upstream documentation, and the project author's description of the six-track Ableton Live Session. End-to-end camera and DAW testing and cross-platform compatibility testing have not been performed as part of this documentation update. The Max version is the file's saved version, not a compatibility test result.
