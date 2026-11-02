@@ -157,6 +157,20 @@ No source code or example patches from the RTT repository have been copied or ad
 
 Thanks to lysdexic-audio for the gesture-recognition foundation and Philip Meyer for the RTT package.
 
+## Modification History
+
+### 2026-11-02 — [Feixin-Music](https://github.com/Feixin-Music/feixin_gesture/commits?author=Feixin-Music)
+
+Modified and integrated the hand-tracking and gesture-recognition component derived from [lysdexic-audio/jweb-hands-gesture-recognizer](https://github.com/lysdexic-audio/jweb-hands-gesture-recognizer) for gesture-controlled music:
+
+- Added custom OK gesture detection using hand-landmark geometry in Max.
+- Added left- and right-hand position output for musical control.
+- Integrated gesture controls with keys, drum, and bass MIDI sequences.
+- Added palm-position modulation of MIDI CC messages.
+- Documented the separate six-track Ableton Live Session, with two tracks per instrument part for timbre switching.
+
+RTT is used only as a separately installed package; no RTT source code or example patches were copied or modified.
+
 ## License
 
 This project's code is distributed under the **GNU General Public License v3.0**. See [LICENSE](LICENSE) for the full license text.
